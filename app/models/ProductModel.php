@@ -92,41 +92,48 @@ class ProductModel {
     }
 
     public function create($data) {
-        // Insert includes loaiHang
-        $sql = "INSERT INTO hanghoa (maHH, tenHH, loaiHang, heSoChiemCho, maDanhMuc, maDVT, model, thuongHieu, moTa, thoiGianBaoHanh) 
-                VALUES (:maHH, :tenHH, :loaiHang, :heSo, :maDanhMuc, :maDVT, :model, :thuongHieu, :moTa, :bh)";
+        // Insert includes dimensions and rotation rule
+    $sql = "INSERT INTO hanghoa (maHH, tenHH, loaiHang, maDanhMuc, maDVT, model, thuongHieu, moTa, thoiGianBaoHanh, chieuDai, chieuRong, chieuCao, quyTacXoay) 
+        VALUES (:maHH, :tenHH, :loaiHang, :maDanhMuc, :maDVT, :model, :thuongHieu, :moTa, :bh, :dai, :rong, :cao, :quyTac)";
         $stmt = $this->conn->prepare($sql);
         // Ensure array has loaiHang key
         $params = [
             ':maHH' => $data['maHH'],
             ':tenHH' => $data['tenHH'],
             ':loaiHang' => $data['loaiHang'] ?? 'LO',
-            ':heSo' => isset($data['heSoChiemCho']) ? (int)$data['heSoChiemCho'] : 1,
-            ':maDanhMuc' => $data['maDanhMuc'],
-            ':maDVT' => $data['maDVT'],
-            ':model' => $data['model'],
-            ':thuongHieu' => $data['thuongHieu'],
-            ':moTa' => $data['moTa'],
-            ':bh' => isset($data['thoiGianBaoHanh']) ? (int)$data['thoiGianBaoHanh'] : 12
-        ];
-        return $stmt->execute($params);
-    }
-
-    public function update($id, $data) {
-        $sql = "UPDATE hanghoa SET tenHH = :tenHH, loaiHang = :loaiHang, heSoChiemCho = :heSo, maDanhMuc = :maDanhMuc,
-                maDVT = :maDVT, model = :model, thuongHieu = :thuongHieu, moTa = :moTa, thoiGianBaoHanh = :bh
-                WHERE maHH = :maHH";
-        $stmt = $this->conn->prepare($sql);
-        $params = [
-            ':tenHH' => $data['tenHH'],
-            ':loaiHang' => $data['loaiHang'] ?? 'LO',
-            ':heSo' => isset($data['heSoChiemCho']) ? (int)$data['heSoChiemCho'] : 1,
             ':maDanhMuc' => $data['maDanhMuc'],
             ':maDVT' => $data['maDVT'],
             ':model' => $data['model'],
             ':thuongHieu' => $data['thuongHieu'],
             ':moTa' => $data['moTa'],
             ':bh' => isset($data['thoiGianBaoHanh']) ? (int)$data['thoiGianBaoHanh'] : 12,
+            ':dai' => isset($data['chieuDai']) ? (int)$data['chieuDai'] : 0,
+            ':rong' => isset($data['chieuRong']) ? (int)$data['chieuRong'] : 0,
+            ':cao' => isset($data['chieuCao']) ? (int)$data['chieuCao'] : 0,
+            ':quyTac' => isset($data['quyTacXoay']) ? $data['quyTacXoay'] : 'XOAY_NGANG'
+        ];
+        return $stmt->execute($params);
+    }
+
+    public function update($id, $data) {
+    $sql = "UPDATE hanghoa SET tenHH = :tenHH, loaiHang = :loaiHang, maDanhMuc = :maDanhMuc,
+        maDVT = :maDVT, model = :model, thuongHieu = :thuongHieu, moTa = :moTa, thoiGianBaoHanh = :bh,
+        chieuDai = :dai, chieuRong = :rong, chieuCao = :cao, quyTacXoay = :quyTac
+        WHERE maHH = :maHH";
+        $stmt = $this->conn->prepare($sql);
+        $params = [
+            ':tenHH' => $data['tenHH'],
+            ':loaiHang' => $data['loaiHang'] ?? 'LO',
+            ':maDanhMuc' => $data['maDanhMuc'],
+            ':maDVT' => $data['maDVT'],
+            ':model' => $data['model'],
+            ':thuongHieu' => $data['thuongHieu'],
+            ':moTa' => $data['moTa'],
+            ':bh' => isset($data['thoiGianBaoHanh']) ? (int)$data['thoiGianBaoHanh'] : 12,
+            ':dai' => isset($data['chieuDai']) ? (int)$data['chieuDai'] : 0,
+            ':rong' => isset($data['chieuRong']) ? (int)$data['chieuRong'] : 0,
+            ':cao' => isset($data['chieuCao']) ? (int)$data['chieuCao'] : 0,
+            ':quyTac' => isset($data['quyTacXoay']) ? $data['quyTacXoay'] : 'XOAY_NGANG',
             ':maHH' => $id
         ];
         return $stmt->execute($params);

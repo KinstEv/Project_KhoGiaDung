@@ -1,0 +1,6 @@
+{
+    "name": "nhath/project_kho-gia-dung",
+    "require": {
+        "dvdoug/boxpacker": "^3.5"
+    }
+}

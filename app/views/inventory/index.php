@@ -21,9 +21,10 @@
                             <th>Sản phẩm</th>
                             <th>Mã Lô</th>
                             <th>Vị trí (Dãy-Kệ-Ô)</th>
-                            <th>Hạn bảo hành (NCC)</th>
+                            <th>Dung tích vị trí</th>
+                            <th>Hạn bảo hành (Lô)</th>
+                            <th class="text-center">Trạng thái</th>
                             <th class="text-center">Số lượng</th>
-                            <th>Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -42,33 +43,56 @@
                                     ?>
                                 </td>
                                 <td>
+                                    <?php
+                                        // Hiển thị dung tích vị trí theo kích thước (D x R x C)
+                                        if (!empty($item['daiToiDa']) || !empty($item['rongToiDa']) || !empty($item['caoToiDa'])) {
+                                            echo sprintf('%sx%sx%s', $item['daiToiDa'], $item['rongToiDa'], $item['caoToiDa']);
+                                        } else {
+                                            echo '<span class="text-muted">-</span>';
+                                        }
+                                    ?>
+                                </td>
+                                <td>
                                     <?php 
-                                        // Format ngày tháng cho đẹp
+                                        // Format ngày tháng cho đẹp (hạn bảo hành của lô)
                                         echo $item['hanBaoHanh'] ? date('d/m/Y', strtotime($item['hanBaoHanh'])) : 'Không BH'; 
                                     ?>
                                 </td>
+                                <td class="text-center">
+                                    <?php
+                                        // Tính phần trăm lấp đầy sơ bộ dựa trên tổng số lượng hiện có tại vị trí so với dung tích (diện tích hoặc thể tích)
+                                        $percent = 0;
+                                        $totalHere = isset($item['totalAtPosition']) ? (float)$item['totalAtPosition'] : 0;
+                                        $d = isset($item['daiToiDa']) ? (float)$item['daiToiDa'] : 0;
+                                        $r = isset($item['rongToiDa']) ? (float)$item['rongToiDa'] : 0;
+                                        $c = isset($item['caoToiDa']) ? (float)$item['caoToiDa'] : 0;
+                                        if (!empty($item['choPhepXepChong'])) {
+                                            $cap = $d * $r * $c; // thể tích
+                                        } else {
+                                            $cap = $d * $r; // diện tích sàn
+                                        }
+                                        if ($cap > 0) {
+                                            $percent = (int) min(100, round(($totalHere / $cap) * 100));
+                                        }
+
+                                        // Màu theo ngưỡng giống vitri view
+                                        $badgeClass = 'bg-secondary';
+                                        if ($percent == 0) $badgeClass = 'bg-primary';
+                                        elseif ($percent <= 60) $badgeClass = 'bg-success';
+                                        elseif ($percent <= 90) $badgeClass = 'bg-warning text-dark';
+                                        else $badgeClass = 'bg-danger';
+
+                                    ?>
+                                    <span class="badge <?php echo $badgeClass; ?>"><?php echo $percent; ?>%</span>
+                                </td>
                                 <td class="text-center fs-5">
                                     <strong><?php echo number_format($item['soLuongTon']); ?></strong>
-                                </td>
-                                <td>
-                                    <?php
-                                        $capacity = isset($item['sucChuaToiDa']) ? (int)$item['sucChuaToiDa'] : 100;
-                                        $totalAtPos = isset($item['totalAtPosition']) ? (int)$item['totalAtPosition'] : 0;
-                                        $percent = ($capacity > 0) ? ($totalAtPos / $capacity) * 100 : 0;
-                                        if ($percent > 90) {
-                                            echo '<span class="badge bg-danger">Đầy (' . round($percent) . '%)</span>';
-                                        } elseif ($percent == 0) {
-                                            echo '<span class="badge bg-success">Trống</span>';
-                                        } else {
-                                            echo '<span class="badge bg-warning text-dark">' . round($percent) . '%</span>';
-                                        }
-                                    ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
+                                <td colspan="7" class="text-center text-muted py-4">
                                     Kho đang trống!
                                 </td>
                             </tr>

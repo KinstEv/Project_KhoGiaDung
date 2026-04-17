@@ -21,6 +21,8 @@
                         <tr>
                             <th>Mã danh mục</th>
                             <th>Tên danh mục</th>
+                            <th>Danh mục cha</th>
+                            <th>Số sản phẩm</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
@@ -30,6 +32,10 @@
                                 <tr>
                                     <td class="fw-bold text-primary"><?php echo $cat['maDanhMuc']; ?></td>
                                     <td><?php echo $cat['tenDanhMuc']; ?></td>
+                                    <td><?php echo isset($cat['tenDanhMucCha']) ? $cat['tenDanhMucCha'] : '-'; ?></td>
+                                    <td>
+                                        <?php echo $cat['soLuong']; ?>
+                                    </td>
                                     <td>
                                         <a href="<?php echo BASE_URL; ?>/category/edit/<?php echo $cat['maDanhMuc']; ?>" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-pencil"></i> Sửa

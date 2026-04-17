@@ -9,6 +9,17 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <form method="post" action="<?php echo BASE_URL; ?>/category/update">
+                    <div class="mb-3">
+                        <label class="form-label">Danh mục cha (tùy chọn)</label>
+                        <select name="maDanhMucCha" class="form-control">
+                            <option value="">-- Không có --</option>
+                            <?php if (!empty($parents)): ?>
+                                <?php foreach ($parents as $p): ?>
+                                    <option value="<?php echo $p['maDanhMuc']; ?>" <?php echo (isset($category['maDanhMucCha']) && $category['maDanhMucCha'] == $p['maDanhMuc']) ? 'selected' : ''; ?>><?php echo $p['tenDanhMuc']; ?></option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
                 <div class="mb-3">
                     <label class="form-label">Mã danh mục</label>
                     <input type="text" name="maDanhMuc" class="form-control" value="<?php echo $category['maDanhMuc']; ?>" readonly>

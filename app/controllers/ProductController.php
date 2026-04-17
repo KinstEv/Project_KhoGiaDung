@@ -34,8 +34,8 @@ class ProductController extends Controller {
         // Ở đây mình ví dụ gọi trực tiếp query đơn giản hoặc giả định Model đã có hàm
         $db = Database::getInstance()->getConnection();
 
-        // Lấy danh mục
-        $stmt = $db->query("SELECT * FROM DanhMuc");
+    // Lấy danh mục
+    $stmt = $db->query("SELECT * FROM danhmuc ORDER BY tenDanhMuc ASC");
         $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Lấy đơn vị tính
@@ -55,8 +55,8 @@ class ProductController extends Controller {
         $this->requirePermission('Q_QL_HANG');
         $db = Database::getInstance()->getConnection();
 
-        // Lấy danh mục
-        $stmt = $db->query("SELECT * FROM DanhMuc");
+    // Lấy danh mục
+    $stmt = $db->query("SELECT * FROM danhmuc ORDER BY tenDanhMuc ASC");
         $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Lấy đơn vị tính
@@ -83,14 +83,17 @@ class ProductController extends Controller {
             $data = [
                 'tenHH' => $_POST['tenHH'],
                 'loaiHang' => $_POST['loaiHang'] ?? 'LO',
-                'heSoChiemCho' => $_POST['heSoChiemCho'] ?? 1,
                 'maDanhMuc' => $_POST['maDanhMuc'],
                 // supplier removed: maNCC
                 'maDVT' => $_POST['maDVT'],
                 'model' => $_POST['model'],
                 'thuongHieu' => $_POST['thuongHieu'],
                 'moTa' => $_POST['moTa'],
-                'thoiGianBaoHanh' => $_POST['thoiGianBaoHanh']
+                'thoiGianBaoHanh' => $_POST['thoiGianBaoHanh'],
+                'chieuDai' => isset($_POST['chieuDai']) ? (int)$_POST['chieuDai'] : 0,
+                'chieuRong' => isset($_POST['chieuRong']) ? (int)$_POST['chieuRong'] : 0,
+                'chieuCao' => isset($_POST['chieuCao']) ? (int)$_POST['chieuCao'] : 0,
+                'quyTacXoay' => isset($_POST['quyTacXoay']) ? $_POST['quyTacXoay'] : 'XOAY_NGANG'
             ];
 
             if ($this->productModel->update($id, $data)) {
@@ -159,13 +162,16 @@ class ProductController extends Controller {
                 'maHH' => $_POST['maHH'],
                 'tenHH' => $_POST['tenHH'],
                 'loaiHang' => $_POST['loaiHang'],
-                'heSoChiemCho' => $_POST['heSoChiemCho'] ?? 1,
                 'maDanhMuc' => $_POST['maDanhMuc'],
                 'maDVT' => $_POST['maDVT'],
                 'model' => $_POST['model'],
                 'thuongHieu' => $_POST['thuongHieu'],
                 'moTa' => $_POST['moTa'],
-                'thoiGianBaoHanh' => $_POST['thoiGianBaoHanh']
+                'thoiGianBaoHanh' => $_POST['thoiGianBaoHanh'],
+                'chieuDai' => isset($_POST['chieuDai']) ? (int)$_POST['chieuDai'] : 0,
+                'chieuRong' => isset($_POST['chieuRong']) ? (int)$_POST['chieuRong'] : 0,
+                'chieuCao' => isset($_POST['chieuCao']) ? (int)$_POST['chieuCao'] : 0,
+                'quyTacXoay' => isset($_POST['quyTacXoay']) ? $_POST['quyTacXoay'] : 'XOAY_NGANG'
             ];
 
             // Gọi Model để insert

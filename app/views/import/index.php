@@ -12,6 +12,15 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
+                <!-- Tìm kiếm
+                <form method="GET" action="" class="row g-3 mb-3">
+                    <div class="col-auto">
+                        <input type="text" name="keyword" class="form-control" placeholder="Nhập mã phiếu hoặc tên NCC..." value="<?php echo $_GET['keyword'] ?? ''; ?>">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                    </div>
+                </form> -->
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
@@ -26,18 +35,18 @@
                     <tbody>
                         <?php if (!empty($data['imports'])): ?>
                             <?php foreach ($data['imports'] as $item): ?>
-                            <tr>
-                                <td class="fw-bold text-primary"><?php echo $item['maPN']; ?></td>
-                                <td>
-                                    <?php echo date('d/m/Y H:i', strtotime($item['ngayNhap'])); ?>
-                                </td>
-                                <td><?php echo $item['tenNCC']; ?></td>
-                                <td><?php echo $item['tenND']; ?></td>
-                                <td><?php echo $item['ghiChu']; ?></td>
-                                <td>
-                                    <a href="<?php echo BASE_URL; ?>/import/show/<?php echo urlencode($item['maPN']); ?>" class="btn btn-sm btn-outline-info">Chi tiết</a>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td class="fw-bold text-primary"><?php echo $item['maPN']; ?></td>
+                                    <td>
+                                        <?php echo date('d/m/Y H:i', strtotime($item['ngayNhap'])); ?>
+                                    </td>
+                                    <td><?php echo $item['tenNCC']; ?></td>
+                                    <td><?php echo $item['tenND']; ?></td>
+                                    <td><?php echo $item['ghiChu']; ?></td>
+                                    <td>
+                                        <a href="<?php echo BASE_URL; ?>/import/show/<?php echo urlencode($item['maPN']); ?>" class="btn btn-sm btn-outline-info">Chi tiết</a>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>

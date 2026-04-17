@@ -34,11 +34,7 @@
                             <input type="text" name="model" class="form-control" placeholder="Ví dụ: SHD-1234">
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Hệ số chiếm chỗ (heSoChiemCho)</label>
-                            <input type="number" name="heSoChiemCho" class="form-control" value="1" min="1" step="1">
-                            <small class="text-muted">Số điểm chiếm chỗ trên 1 đơn vị sản phẩm. Ví dụ: Nồi cơm có 20.</small>
-                        </div>
+                        <!-- heSoChiemCho removed: system now uses physical dimensions chieuDai/chieuRong/chieuCao -->
                         
                         <div class="mb-3">
                             <label class="form-label font-weight-bold">Loại quản lý hàng (*)</label>
@@ -78,6 +74,25 @@
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Kích thước (Dài x Rộng x Cao) (đơn vị: cm)</label>
+                            <div class="d-flex" style="gap:8px;">
+                                <input type="number" name="chieuDai" class="form-control" placeholder="Dài" min="0">
+                                <input type="number" name="chieuRong" class="form-control" placeholder="Rộng" min="0">
+                                <input type="number" name="chieuCao" class="form-control" placeholder="Cao" min="0">
+                            </div>
+                            <small class="text-muted">Dùng để tính diện tích sàn và chiều cao khi phân bổ vào vị trí kho.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Quy tắc xoay (Rotation)</label>
+                            <select name="quyTacXoay" class="form-control">
+                                <option value="XOAY_NGANG">Xoay ngang (chỉ hoán đổi Dài/Rộng)</option>
+                                <option value="TU_DO">Tự do (xoay tự do 6 hướng)</option>
+                            </select>
+                            <small class="text-muted">Quy tắc này có thể được dùng để tối ưu khi xếp hàng (hiện tại hệ thống sử dụng heuristics).</small>
                         </div>
 
                         <!-- Supplier field removed because hanghoa.maNCC was deleted -->

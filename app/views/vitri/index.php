@@ -11,7 +11,7 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered table-sm">
-                    <thead class="table-light"><tr><th>Code</th><th>Dãy</th><th>Kệ</th><th>Ô</th><th>Sức chứa</th><th>Trạng thái</th><th>Hành động</th></thead>
+                    <thead class="table-light"><tr><th>Code</th><th>Dãy</th><th>Kệ</th><th>Ô</th><th>Kích thước (DxR xC)</th><th>Danh mục ưu tiên</th><th>Cho phép xếp chồng</th><th>Trạng thái</th><th>Hành động</th></thead>
                     <tbody>
                         <?php if (!empty($data['rows'])): ?>
                             <?php foreach ($data['rows'] as $r): ?>
@@ -20,17 +20,41 @@
                                     <td><?php echo htmlspecialchars($r['day']); ?></td>
                                     <td><?php echo htmlspecialchars($r['ke']); ?></td>
                                     <td><?php echo htmlspecialchars($r['o']); ?></td>
-                                    <td><?php echo intval($r['sucChuaToiDa'] ?? 0); ?></td>
+                                    <td>
+                                        <?php
+                                            $d = isset($r['daiToiDa']) ? intval($r['daiToiDa']) : 0;
+                                            $width = isset($r['rongToiDa']) ? intval($r['rongToiDa']) : 0;
+                                            $h = isset($r['caoToiDa']) ? intval($r['caoToiDa']) : 0;
+                                            echo ($d || $width || $h) ? ($d . 'x' . $width . 'x' . $h) : '<span class="text-muted">Chưa cấu hình</span>';
+                                        ?>
+                                    </td>
+                                    <td><?php echo !empty($r['tenDanhMucUuTien']) ? htmlspecialchars($r['tenDanhMucUuTien']) : (!empty($r['maDanhMucUuTien']) ? htmlspecialchars($r['maDanhMucUuTien']) : '<span class="text-muted">-</span>'); ?></td>
+                                    <td>
+                                        <?php echo isset($r['choPhepXepChong']) && $r['choPhepXepChong'] ? '<span class="badge bg-info">Có</span>' : '<span class="text-muted">Không</span>'; ?>
+                                    </td>
                                     <?php
-                                        // Determine occupancy percent and map to two states: "Trống" or "Đầy"
-                                        $capacity = intval($r['sucChuaToiDa'] ?? 0);
-                                        $occupied = floatval($r['totalAtPosition'] ?? 0);
-                                        $percent = ($capacity > 0) ? round(($occupied / $capacity) * 100) : 0;
-                                        $displayPercent = min(100, max(0, intval($percent)));
-                                        if ($percent > 90) {
-                                            $statusBadge = '<span class="badge bg-danger">Đầy (' . $displayPercent . '%)</span>';
+                                        // Display fill percentage and color according to rules:
+                                        // A/B (no stacking): area% ; C/D (stacking): volume%
+                                        $pct = isset($r['fillPercent']) ? $r['fillPercent'] : null;
+                                        if ($pct === null) {
+                                            $statusBadge = '<span class="text-muted">Không xác định</span>';
                                         } else {
-                                            $statusBadge = '<span class="badge bg-success">Trống (' . $displayPercent . '%)</span>';
+                                            $label = '';
+                                            $cls = '';
+                                            if ($pct === 0) {
+                                                $cls = 'bg-primary';
+                                                $label = 'Trống';
+                                            } elseif ($pct <= 60) {
+                                                $cls = 'bg-success';
+                                                $label = 'Còn trống nhiều';
+                                            } elseif ($pct <= 90) {
+                                                $cls = 'bg-warning text-dark';
+                                                $label = 'Gần đầy';
+                                            } else {
+                                                $cls = 'bg-danger';
+                                                $label = 'Đầy';
+                                            }
+                                            $statusBadge = '<span class="badge ' . $cls . '">' . htmlspecialchars($pct) . '% - ' . htmlspecialchars($label) . '</span>';
                                         }
                                     ?>
                                     <td><?php echo $statusBadge; ?></td>
@@ -41,7 +65,7 @@
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="7" class="text-center text-muted">Chưa có vị trí nào.</td></tr>
+                            <tr><td colspan="9" class="text-center text-muted">Chưa có vị trí nào.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

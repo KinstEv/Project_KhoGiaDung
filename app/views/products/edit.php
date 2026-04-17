@@ -42,10 +42,7 @@
                             </select>
                         </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Hệ số chiếm chỗ (heSoChiemCho)</label>
-                            <input type="number" name="heSoChiemCho" class="form-control" value="<?php echo htmlspecialchars($data['product']['heSoChiemCho'] ?? 1); ?>" min="1" step="1">
-                        </div>
+                        <!-- heSoChiemCho removed: system now uses physical dimensions chieuDai/chieuRong/chieuCao -->
                     </div>
 
                     <div class="col-md-6">
@@ -75,6 +72,23 @@
                                         <?php echo $unit['tenDVT']; ?>
                                     </option>
                                 <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Kích thước (Dài x Rộng x Cao) (cm)</label>
+                            <div class="d-flex" style="gap:8px;">
+                                <input type="number" name="chieuDai" class="form-control" placeholder="Dài" min="0" value="<?php echo htmlspecialchars($data['product']['chieuDai'] ?? 0); ?>">
+                                <input type="number" name="chieuRong" class="form-control" placeholder="Rộng" min="0" value="<?php echo htmlspecialchars($data['product']['chieuRong'] ?? 0); ?>">
+                                <input type="number" name="chieuCao" class="form-control" placeholder="Cao" min="0" value="<?php echo htmlspecialchars($data['product']['chieuCao'] ?? 0); ?>">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Quy tắc xoay</label>
+                            <select name="quyTacXoay" class="form-control">
+                                <option value="XOAY_NGANG" <?php echo (($data['product']['quyTacXoay'] ?? '') === 'XOAY_NGANG') ? 'selected' : ''; ?>>Xoay ngang (chỉ hoán đổi Dài/Rộng)</option>
+                                <option value="TU_DO" <?php echo (($data['product']['quyTacXoay'] ?? '') === 'TU_DO') ? 'selected' : ''; ?>>Tự do (xoay tự do)</option>
                             </select>
                         </div>
 

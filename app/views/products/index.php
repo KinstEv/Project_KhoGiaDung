@@ -21,7 +21,8 @@
                             <th>ĐVT</th>
                             <th class="text-center">Tồn kho</th>
                             <th class="text-center">Hạn bảo hành</th>
-                            <th class="text-center">Hệ số chiếm chỗ</th>
+                            <th class="text-center">Kích thước (DxRxC)</th>
+                            <th class="text-center">Quy tắc xoay</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
@@ -52,7 +53,10 @@
                                     <?php echo isset($item['thoiGianBaoHanh']) ? $item['thoiGianBaoHanh'] . ' tháng' : '-'; ?>
                                 </td>
                                 <td class="text-center">
-                                    <?php echo isset($item['heSoChiemCho']) ? $item['heSoChiemCho'] : '-'; ?>
+                                    <?php echo (isset($item['chieuDai']) || isset($item['chieuRong']) || isset($item['chieuCao'])) ? ($item['chieuDai'] . 'x' . $item['chieuRong'] . 'x' . $item['chieuCao']) : '-'; ?>
+                                </td>
+                                <td class="text-center">
+                                    <?php echo isset($item['quyTacXoay']) ? $item['quyTacXoay'] : '-'; ?>
                                 </td>
                                 <td>
                                     <a href="<?php echo BASE_URL; ?>/product/edit/<?php echo $item['maHH']; ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
@@ -62,7 +66,7 @@
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
+                                <td colspan="9" class="text-center text-muted py-4">
                                     Chưa có hàng hóa nào. Hãy thêm mới!
                                 </td>
                             </tr>

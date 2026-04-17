@@ -19,7 +19,12 @@ class CategoryController extends Controller {
     }
 
     public function create() {
-        $data = ['title' => 'Thêm Danh mục'];
+        // Lấy danh sách danh mục hiện có để người dùng có thể chọn danh mục cha (tùy chọn)
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->query("SELECT * FROM danhmuc ORDER BY tenDanhMuc ASC");
+        $parents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $data = ['title' => 'Thêm Danh mục', 'parents' => $parents];
         $this->view('categories/create', $data);
     }
 
@@ -27,7 +32,8 @@ class CategoryController extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
                 'maDanhMuc' => $_POST['maDanhMuc'],
-                'tenDanhMuc' => $_POST['tenDanhMuc']
+                'tenDanhMuc' => $_POST['tenDanhMuc'],
+                'maDanhMucCha' => isset($_POST['maDanhMucCha']) && $_POST['maDanhMucCha'] !== '' ? $_POST['maDanhMucCha'] : null
             ];
 
             // Kiểm tra trùng mã
@@ -45,14 +51,23 @@ class CategoryController extends Controller {
     public function edit($id) {
         $category = $this->categoryModel->find($id);
         if (!$category) { die('Không tìm thấy danh mục'); }
-        $data = ['title' => 'Cập nhật Danh mục', 'category' => $category];
+        // Lấy danh sách danh mục để chọn danh mục cha (không bao gồm chính nó)
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->prepare("SELECT * FROM danhmuc WHERE maDanhMuc != :id ORDER BY tenDanhMuc ASC");
+        $stmt->execute(['id' => $id]);
+        $parents = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $data = ['title' => 'Cập nhật Danh mục', 'category' => $category, 'parents' => $parents];
         $this->view('categories/edit', $data);
     }
 
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $id = $_POST['maDanhMuc'];
-            $data = ['tenDanhMuc' => $_POST['tenDanhMuc']];
+            $data = [
+                'tenDanhMuc' => $_POST['tenDanhMuc'],
+                'maDanhMucCha' => isset($_POST['maDanhMucCha']) && $_POST['maDanhMucCha'] !== '' ? $_POST['maDanhMucCha'] : null
+            ];
             if ($this->categoryModel->update($id, $data)) {
                 header('Location: ' . BASE_URL . '/category');
             } else {

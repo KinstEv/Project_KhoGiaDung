@@ -36,7 +36,11 @@ class VitriController extends Controller {
                 'day' => $day,
                 'ke' => $ke,
                 'o' => $o,
-                'sucChuaToiDa' => isset($_POST['sucChuaToiDa']) ? (int)$_POST['sucChuaToiDa'] : 100,
+                'daiToiDa' => isset($_POST['daiToiDa']) ? (int)$_POST['daiToiDa'] : 0,
+                'rongToiDa' => isset($_POST['rongToiDa']) ? (int)$_POST['rongToiDa'] : 0,
+                'caoToiDa' => isset($_POST['caoToiDa']) ? (int)$_POST['caoToiDa'] : 0,
+                'choPhepXepChong' => isset($_POST['choPhepXepChong']) ? (int)$_POST['choPhepXepChong'] : 0,
+                'maDanhMucUuTien' => isset($_POST['maDanhMucUuTien']) && $_POST['maDanhMucUuTien'] !== '' ? $_POST['maDanhMucUuTien'] : null,
                 'trangThai' => isset($_POST['trangThai']) ? (int)$_POST['trangThai'] : 1
             ];
             if ($this->vitriModel->create($data)) {
@@ -63,7 +67,11 @@ class VitriController extends Controller {
                 'day' => trim($_POST['day']),
                 'ke' => trim($_POST['ke']),
                 'o' => trim($_POST['o']),
-                'sucChuaToiDa' => isset($_POST['sucChuaToiDa']) ? (int)$_POST['sucChuaToiDa'] : 100,
+                'daiToiDa' => isset($_POST['daiToiDa']) ? (int)$_POST['daiToiDa'] : 0,
+                'rongToiDa' => isset($_POST['rongToiDa']) ? (int)$_POST['rongToiDa'] : 0,
+                'caoToiDa' => isset($_POST['caoToiDa']) ? (int)$_POST['caoToiDa'] : 0,
+                'choPhepXepChong' => isset($_POST['choPhepXepChong']) ? (int)$_POST['choPhepXepChong'] : 0,
+                'maDanhMucUuTien' => isset($_POST['maDanhMucUuTien']) && $_POST['maDanhMucUuTien'] !== '' ? $_POST['maDanhMucUuTien'] : null,
                 'trangThai' => isset($_POST['trangThai']) ? (int)$_POST['trangThai'] : 1
             ];
             if ($this->vitriModel->update($id, $data)) {

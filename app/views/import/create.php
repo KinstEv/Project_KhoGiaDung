@@ -4,7 +4,10 @@
 <div class="container-fluid">
     <h1 class="h3 mb-4 text-gray-800">Tạo Phiếu Nhập Kho Mới</h1>
 
-    <div id="importErrorBox" class="alert alert-danger d-none" role="alert"></div>
+    <!-- Khu vực hiển thị thông báo lỗi từ Controller -->
+    <div id="importErrorBox" class="alert alert-danger <?php echo isset($data['error']) ? '' : 'd-none'; ?>" role="alert">
+        <?php echo isset($data['error']) ? $data['error'] : ''; ?>
+    </div>
 
     <form action="<?php echo BASE_URL; ?>/import/store" method="POST" id="importForm">
         <input type="hidden" name="maDH" id="selectedOrderId" value="">
@@ -76,13 +79,15 @@
                                             <select name="product_id[]" class="form-select form-select-sm import-product-select" required style="width: 100%">
                                                 <option value="">-- Chọn hàng --</option>
                                                 <?php foreach ($data['products'] as $p): ?>
+                                                    <!-- Đính kèm data-loai để JS biết hàng này là LO hay SERIAL -->
                                                     <option value="<?php echo $p['maHH']; ?>" data-loai="<?php echo $p['loaiHang']; ?>">
-                                                        <?php echo $p['tenHH']; ?> (<?php echo $p['maHH']; ?>)
+                                                        <?php echo $p['tenHH']; ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
-                                        <span class="badge bg-secondary type-badge">LO</span>
+                                        <!-- Badge hiển thị loại hàng (LO hoặc SERIAL) -->
+                                        <span class="badge bg-secondary type-badge"></span>
                                     </div>
                                 </td>
                                 <td>
@@ -94,6 +99,8 @@
                                 <td>
                                     <div class="d-flex align-items-center" style="gap:4px;">
                                         <input type="number" name="quantity[]" class="form-control form-control-sm qty-input" min="1" value="1" required style="max-width:80px;">
+                                        
+                                        <!-- Nút nhập Serial: Chỉ hiện khi chọn hàng Serial -->
                                         <button type="button" class="btn btn-outline-secondary btn-sm open-serial-modal" title="Nhập serial" style="white-space:nowrap;">Nhập serial</button>
                                     </div>
                                     <input type="hidden" name="serials[]" class="serials-hidden">
@@ -156,6 +163,10 @@
 <?php require_once APP_ROOT . '/views/layouts/footer.php'; ?>
 
 <script>
+    /**
+     * KHỞI TẠO CÁC DROPDOWN SELECT2
+     * Giúp ô chọn trở nên thông minh hơn: Tìm kiếm được, giao diện đẹp hơn.
+     */
     $(document).ready(function() {
         // Init Select2 for Supplier
         $('#select-ncc').select2({
@@ -171,12 +182,15 @@
             allowClear: true
         });
 
-        // Init Select2 for existing products
+        // Init Select2 for existing products (cột sản phẩm trong bảng)
         $('.import-product-select').each(function() {
             initSelect2Product($(this));
         });
     });
 
+    /**
+     * Hàm tái sử dụng để gán Select2 cho ô chọn sản phẩm (dùng khi thêm dòng mới)
+     */
     function initSelect2Product(element) {
         element.select2({
             theme: 'bootstrap-5',
@@ -184,33 +198,32 @@
             allowClear: true,
             dropdownParent: element.parent() 
         }).on('select2:select', function (e) {
-            // Trigger vanilla change event so updateEvents logic runs
+            // Khi chọn xong, bắn sự kiện 'change' thuần để hàm updateEvents nhận biết
             this.dispatchEvent(new Event('change', { bubbles: true }));
         }).on('select2:unselect', function (e) {
             this.dispatchEvent(new Event('change', { bubbles: true }));
         });
     }
 
-    // 1. Thêm dòng mới
+    // 1. CHỨC NĂNG THÊM DÒNG MỚI
     document.getElementById('addRow').addEventListener('click', function() {
         var table = document.getElementById('productTable').getElementsByTagName('tbody')[0];
         // Clone first row
         var firstRow = table.rows[0];
         var newRow = null; 
         
-        // Use cloneNode but we need to clean up Select2 artifacts
-        // Instead of deep cloning immediately, we might temporarily destroy select2 on source? No.
+        // Copy dòng đầu tiên (clone) nhưng cần làm sạch Select2 cũ đi
         newRow = firstRow.cloneNode(true);
         
-        // Clean Select2 from clone
+        // Xóa class/data rác của Select2 cũ trên dòng mới
         $(newRow).find('.select2-container').remove();
         var sel = $(newRow).find('select');
         sel.removeClass('select2-hidden-accessible');
         sel.removeAttr('data-select2-id');
         sel.find('option').removeAttr('data-select2-id');
-        sel.val(''); // reset value
+        sel.val(''); // reset value về rỗng
 
-        // Reset giá trị các input trong dòng mới
+        // Reset giá trị các input khác (Số lượng về 1, Tiền về 0)
         var inputs = newRow.getElementsByTagName('input');
         for (var i = 0; i < inputs.length; i++) {
             inputs[i].value = (inputs[i].type === 'number') ? 0 : '';
@@ -222,74 +235,80 @@
         
         table.appendChild(newRow);
         
-        // Init select2 for new row
+        // Khởi tạo lại Select2 cho dòng mới thêm
         initSelect2Product(sel);
 
         updateEvents(); // Gán lại sự kiện tính tiền cho dòng mới
         
-        // Trigger change on the new select so visibility/badge updates
-        // Native event dispatch works even with Select2 hidden input
+        // Kích hoạt sự kiện change để ẩn hiện nút Serial đúng logic
         newRow.querySelector('select[name="product_id[]"]').dispatchEvent(new Event('change'));
     });
 
-    // 2. Xóa dòng
+    // 2. CHỨC NĂNG XÓA DÒNG
     document.getElementById('productTable').addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('removeRow')) {
             var rowCount = document.getElementById('productTable').tBodies[0].rows.length;
-            if (rowCount > 1) {
+            if (rowCount > 1) { // Giữ lại ít nhất 1 dòng
                 e.target.closest('tr').remove();
-                calculateTotal(); // Tính lại tổng tiền
+                calculateTotal(); // Tính lại tổng tiền sau khi xóa
             } else {
                 alert('Phải có ít nhất 1 dòng sản phẩm!');
             }
         }
     });
 
-    // 3. Tính thành tiền tự động
+    /**
+     * 3. LOGIC CẬP NHẬT SỰ KIỆN TOÀN TRANG
+     * Được gọi mỗi khi thêm dòng mới hoặc tải lại bảng
+     * Gán sự kiện cho: Thay đổi số lượng, thay đổi đơn giá, thay đổi sản phẩm
+     */
     function updateEvents() {
     var qtyInputs = document.querySelectorAll('.qty-input');
     var priceInputs = document.querySelectorAll('.price-input');
         // Lấy thêm các ô ngày hết hạn
         var dateInputs = document.querySelectorAll('input[type="date"]');
 
-        // Use assignment to avoid duplicate handlers when re-initializing
+        // Khi gõ số lượng hoặc đơn giá -> Tính lại thành tiền ngay lập tức
         qtyInputs.forEach(input => { input.oninput = calculateRow; });
         priceInputs.forEach(input => { input.oninput = calculateRow; });
         // hidden serials do not drive UI directly; modal will update them
         var serialHidden = document.querySelectorAll('.serials-hidden');
         serialHidden.forEach(function(sh){ sh.onchange = calculateRow; });
         
-        // product change: toggle serials vs quantity
+        // SỰ KIỆN KHI CHỌN SẢN PHẨM KHÁC
         var selects = document.querySelectorAll('select[name="product_id[]"]');
         selects.forEach(sel => {
             sel.onchange = function() {
+                // Kiểm tra loại hàng (LO hay SERIAL) dựa vào thuộc tính data-loai
                 var loai = this.options[this.selectedIndex] ? this.options[this.selectedIndex].getAttribute('data-loai') : null;
                 var tr = this.closest('tr');
                 var qty = tr.querySelector('input[name="quantity[]"]');
                 var serialBtn = tr.querySelector('.open-serial-modal');
                 var badge = tr.querySelector('.type-badge');
+                
+                // Nếu là SERIAL -> Hiện nút nhập serial, đổi màu badge xanh
                 if (loai === 'SERIAL') {
-                    // for serial-managed products we still show qty and allow serial input via modal
                     if (serialBtn) serialBtn.style.display = '';
                     if (badge) { badge.innerText = 'SERIAL'; badge.className = 'badge bg-success type-badge'; }
                 } else {
+                // Nếu là LO -> Ẩn nút serial, đổi màu badge xám
                     if (serialBtn) serialBtn.style.display = 'none';
                     if (badge) { badge.innerText = 'LO'; badge.className = 'badge bg-secondary type-badge'; }
                 }
                 // Sau khi chọn sản phẩm, cập nhật danh sách option để không cho chọn trùng
                 refreshImportProductOptions();
 
-                // recalc row after changing type
+                // Tính lại tiền
                 var ev = new Event('input', { bubbles: true });
                 if (qty) qty.dispatchEvent(ev);
             };
         });
 
-        // serial modal open buttons
+        // Sự kiện mở modal nhập serial
         var serialOpenBtns = document.querySelectorAll('.open-serial-modal');
         serialOpenBtns.forEach(function(btn){ btn.onclick = openSerialModal; });
         
-        // --- THÊM ĐOẠN NÀY ---
+        // Validate ngày hết hạn không được nhỏ hơn hôm nay
         dateInputs.forEach(input => {
             input.addEventListener('change', function() {
                 var today = new Date().toISOString().split('T')[0];
@@ -302,19 +321,23 @@
         // ---------------------
     }
 
+    /**
+     * 4. HÀM TÍNH TOÁN
+     * Tính Thành tiền = Số lượng * Đơn giá
+     */
     function calculateRow(e) {
         var row = e.target.closest('tr');
         var price = parseFloat(row.querySelector('.price-input').value) || 0;
-        // Qty always from qty input; serials are stored in hidden input populated from modal
         var qty = parseInt(row.querySelector('.qty-input').value) || 0;
 
         var subtotal = qty * price;
         
-        // Format tiền tệ
+        // Format tiền tệ VNĐ và gán vào ô Thành tiền
         row.querySelector('.subtotal').value = new Intl.NumberFormat('vi-VN').format(subtotal);
         calculateTotal();
     }
 
+    // Tính Tổng cộng cả phiếu (Grand Total)
     function calculateTotal() {
         var total = 0;
         var rows = document.querySelectorAll('#productTable tbody tr');
@@ -328,22 +351,25 @@
 
     // Khởi chạy lần đầu
     updateEvents();
-    // Lọc lại danh sách sản phẩm theo các dòng đã chọn
+    
+    // Hàm ngăn chặn chọn trùng sản phẩm trên nhiều dòng
     function refreshImportProductOptions() {
         var tbody = document.querySelector('#productTable tbody');
         if (!tbody) return;
         var selectedValues = [];
+        // Lấy danh sách các sản phẩm đang được chọn
         var selects = tbody.querySelectorAll('select[name="product_id[]"]');
         selects.forEach(function(sel) {
             var val = sel.value;
             if (val) selectedValues.push(val);
         });
 
+        // Duyệt qua từng ô select và ẩn (disabled) những món đã được chọn ở dòng khác
         selects.forEach(function(sel) {
             var current = sel.value;
             var options = sel.querySelectorAll('option');
             options.forEach(function(opt) {
-                if (!opt.value) return; // skip placeholder
+                if (!opt.value) return; 
                 if (opt.value !== current && selectedValues.indexOf(opt.value) !== -1) {
                     opt.disabled = true;
                 } else {
@@ -352,13 +378,14 @@
             });
         });
     }
-    // Trigger change on existing selects to set correct visibility
+    // Trigger change để UI cập nhật đúng
     document.querySelectorAll('select[name="product_id[]"]').forEach(function(s){
         var ev = new Event('change'); s.dispatchEvent(ev);
     });
     refreshImportProductOptions();
 
-    // --- Serial modal logic ---
+    // --- CÁC HÀM XỬ LÝ MODAL SERIAL (Nâng cao) ---
+
     // Modal elements (we'll create modal HTML below)
     var currentRowIndex = null;
 

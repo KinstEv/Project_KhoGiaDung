@@ -29,8 +29,22 @@
                     </div>
                     <div class="col-md-4">
                         <div class="mb-3">
-                            <label class="form-label">Sức chứa tối đa</label>
-                            <input type="number" name="sucChuaToiDa" class="form-control" required value="<?php echo htmlspecialchars($data['row']['sucChuaToiDa'] ?? 100); ?>" min="1" step="1">
+                            <label class="form-label">Kích thước vị trí (Dài x Rộng x Cao)</label>
+                            <div class="input-group">
+                                <input type="number" name="daiToiDa" class="form-control" placeholder="Dài" value="<?php echo htmlspecialchars($data['row']['daiToiDa'] ?? 0); ?>" min="0" step="1">
+                                <input type="number" name="rongToiDa" class="form-control" placeholder="Rộng" value="<?php echo htmlspecialchars($data['row']['rongToiDa'] ?? 0); ?>" min="0" step="1">
+                                <input type="number" name="caoToiDa" class="form-control" placeholder="Cao" value="<?php echo htmlspecialchars($data['row']['caoToiDa'] ?? 0); ?>" min="0" step="1">
+                            </div>
+                            <small class="text-muted">Đơn vị theo DB (ví dụ mm). Nhập 0 nếu không muốn dùng kích thước.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Cho phép xếp chồng</label>
+                            <select name="choPhepXepChong" class="form-control">
+                                <option value="0" <?php echo (empty($data['row']['choPhepXepChong']) ? 'selected' : ''); ?>>Không</option>
+                                <option value="1" <?php echo (!empty($data['row']['choPhepXepChong']) ? 'selected' : ''); ?>>Có</option>
+                            </select>
                         </div>
                     </div>
                     <!-- trangThai input removed: trạng thái giờ là động (Trống/Đầy) tính từ mức chiếm -->
