@@ -123,6 +123,13 @@ class WarehouseItem implements Item
         return (bool)$this->keepFlat;
     }
 
+    // New: indicate whether the item may be rotated (library-version dependent)
+    // Keeping this true allows rotation around vertical axis but getKeepFlat() prevents flipping onto a short side.
+    public function canBeRotated(): bool
+    {
+        return true;
+    }
+
     // Thuộc tính quan trọng cho việc xếp chồng
     public function getCanBeStackedOn(): bool
     {
@@ -433,23 +440,38 @@ class ImportModel
             $mid = intdiv($low + $high, 2);
             $packer = new Packer();
 
+            // If stacking is forbidden in this zone, limit the effective box height to the product height
+            $effectiveHeight = (int)$vitri['caoToiDa'];
+            if ($isNoStackZone) {
+                // Use the tested product height so the packer cannot place items above it
+                $effectiveHeight = isset($hang['chieuCao']) ? (int)$hang['chieuCao'] : $effectiveHeight;
+            }
+
             $packer->addBox(new WarehouseBin(
                 $maViTri,
                 (int)$vitri['daiToiDa'],
                 (int)$vitri['rongToiDa'],
-                (int)$vitri['caoToiDa'],
+                $effectiveHeight,
                 0,
                 (int)$vitri['daiToiDa'],
                 (int)$vitri['rongToiDa'],
-                (int)$vitri['caoToiDa'],
+                $effectiveHeight,
                 1000000
             ));
 
             // 3. Nạp hàng cũ với quy tắc xoay từ DB
             foreach ($existingItems as $ei) {
-                // Nếu quyTacXoay là 'xoay ngang' -> keepFlat = true
-                $keepFlat = ($ei['quyTacXoay'] === 'xoay ngang');
+                // Quy tắc xoay: 'xoay ngang' => keepFlat true. Một số mặt hàng (ví dụ Tivi) cần ép luôn đứng thẳng.
+                $keepFlat = (isset($ei['quyTacXoay']) && $ei['quyTacXoay'] === 'xoay ngang');
+                // Force keepFlat for TVs (product name contains 'tivi') to avoid accidental tilt
+                if (!empty($ei['tenHH']) && stripos($ei['tenHH'], 'tivi') !== false) {
+                    $keepFlat = true;
+                }
+                $keepFlat = (bool)$keepFlat;
+
+                // Nếu vị trí thuộc dãy A/B thì cấm xếp chồng
                 $canStack = !$isNoStackZone;
+                $canStack = (bool)$canStack;
 
                 for ($i = 0; $i < $ei['soLuong']; $i++) {
                     $packer->addItem(new WarehouseItem(
@@ -466,7 +488,11 @@ class ImportModel
 
             // 4. Nạp hàng mới đang thử nghiệm
             $keepFlatNew = (isset($hang['quyTacXoay']) && $hang['quyTacXoay'] === 'xoay ngang');
-            $canStackNew = !$isNoStackZone;
+            if (!empty($hang['tenHH']) && stripos($hang['tenHH'], 'tivi') !== false) {
+                $keepFlatNew = true;
+            }
+            $keepFlatNew = (bool)$keepFlatNew;
+            $canStackNew = (bool)!$isNoStackZone;
 
             for ($j = 0; $j < $mid; $j++) {
                 $packer->addItem(new WarehouseItem(
